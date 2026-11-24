@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hydraulic Jumps in a Rectangular Channel: An AI Fluid Mechanics Project</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=Work+Sans:wght@400;600&display=swap">
+<style>
+:root{--bg:#f3f7f9;--surface:#fff;--ink:#0d2236;--muted:#4b6174;--line:#cbd9e2;--water:#2b7bb9;--deep:#0d3b66;--accent:#b87800;--bed:#b9a68a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1722;--surface:#112535;--ink:#e6f0f6;--muted:#9bb2c2;--line:#25415a;--water:#4aa3e0;--deep:#06101a;--accent:#f2b134;--bed:#6f624e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0a1722;--surface:#112535;--ink:#e6f0f6;--muted:#9bb2c2;--line:#25415a;--water:#4aa3e0;--deep:#06101a;--accent:#f2b134;--bed:#6f624e;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:60px}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.65 Newsreader,Georgia,serif}
+h1,h2,h3,nav,label,button,th,.ui{font-family:"Work Sans",system-ui,sans-serif}
+.skip{position:absolute;left:-999px}.skip:focus{left:8px;top:8px;background:var(--surface);padding:8px;z-index:9}
+header{background:var(--deep);color:#fff;padding:44px 20px 30px}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-size:clamp(28px,5vw,44px);line-height:1.1;margin:0 0 10px;font-weight:600}
+header p{max-width:64ch;margin:0 0 8px;opacity:.92}
+.badge{display:inline-block;margin-top:8px;padding:6px 12px;border:1px solid #f2b134;color:#ffd98a;border-radius:4px;font:600 14px "Work Sans",sans-serif}
+nav{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--line);z-index:5;padding-top:env(safe-area-inset-top,0px)}
+nav .wrap{display:flex;gap:4px;align-items:center;padding:0 12px}
+nav a{padding:13px 12px;color:var(--ink);text-decoration:none;font-size:15px;white-space:nowrap;border-bottom:3px solid transparent}
+nav a.on{border-color:var(--water);font-weight:600}
+nav button{margin-left:auto}
+main{padding:0 20px 50px}
+.view{display:none;max-width:980px;margin:0 auto}.view.on{display:block}
+section{padding:34px 0 4px}
+h2{font-size:27px;margin:0 0 12px;font-weight:600}h3{font-size:19px;margin:24px 0 6px}
+p,li{max-width:72ch}
+.eq{background:var(--surface);border-left:4px solid var(--water);padding:10px 16px;margin:12px 0;overflow-x:auto;max-width:72ch;font-size:19px}
+.note{border:1px solid var(--accent);border-radius:6px;padding:10px 14px;margin:14px 0;max-width:72ch;background:var(--surface)}
+fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .2em;line-height:1.25}
+n{display:block;border-bottom:1.5px solid currentColor;padding:0 .3em}d{display:block;padding:0 .3em}
+rad{border-top:1.5px solid currentColor;padding:1px 2px 0}
+.sim{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;margin-top:14px}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
+label{display:flex;flex-direction:column;font-size:14px;color:var(--muted);gap:4px}
+input,select{font:16px "Work Sans",sans-serif;padding:8px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink);width:100%}
+input[type=range]{padding:0}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button{font-size:15px;padding:8px 14px;border-radius:4px;border:1px solid var(--water);background:var(--water);color:#fff;cursor:pointer;font-weight:600}
+button.alt{background:transparent;color:var(--water)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.gfix{align-self:end;font:14px "Work Sans",sans-serif;color:var(--muted);padding-bottom:10px}
+canvas{width:100%;height:auto;display:block;border-radius:6px;background:linear-gradient(#eaf4fa,#f7fbfd);margin-top:8px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) canvas{background:linear-gradient(#0c2030,#0f2a3d)}}
+:root[data-theme="dark"] canvas{background:linear-gradient(#0c2030,#0f2a3d)}
+.out{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px}
+.out div{border:1px solid var(--line);border-radius:6px;padding:8px 10px;font:14px "Work Sans",sans-serif;color:var(--muted)}
+.out b{display:block;font-size:20px;color:var(--ink)}
+#msg{margin:10px 0 0;font:600 15px "Work Sans",sans-serif;color:var(--accent)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:16px;background:var(--surface);margin:8px 0}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}th{background:var(--bg);font-size:14px}
+textarea{width:100%;min-height:150px;font:15px/1.5 "Work Sans",sans-serif;padding:10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink)}
+svg{width:100%;height:auto;max-width:760px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.todo{color:var(--accent);font-weight:600}
+footer{padding:22px 20px;border-top:1px solid var(--line);font-size:15px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<a class="skip" href="#main" onclick="event.preventDefault();document.getElementById('main').focus()">Skip to content</a>
+<header><div class="wrap">
+<h1>Hydraulic Jumps in a Rectangular Channel</h1>
+<p>An explainer, derivation and live simulator for our fluid mechanics course project.</p>
+<span class="badge">AI project: built to explore what AI models can and can’t do in engineering coursework</span>
+</div></header>
+<nav><div class="wrap">
+<a href="#paper" data-v="paper">Paper</a><a href="#lab" data-v="lab">Interactive simulation</a><a href="#project" data-v="project">Project and AI process</a>
+<button class="alt" id="theme">Theme</button>
+</div></nav>
+<main id="main" tabindex="-1">
+
+<div class="view" id="v-paper">
+<section>
+<h2>1. Theory</h2>
+<h3>1.1 What is a hydraulic jump?</h3>
+<p>A hydraulic jump is a phenomenon in open channel flow where high-velocity (supercritical) water transitions abruptly into slower-moving (subcritical) flow. The water surface rises suddenly, turbulent waves and a rolling roller form, and a large share of the flow’s mechanical energy is dissipated. De Padova and Mossa (2021) put it compactly: a jump occurs whenever an upstream supercritical flow is forced to become subcritical.</p>
+<p>A <em>stationary</em> jump sits at a fixed location. Upstream, the flow is fast and shallow. Downstream, it is slow and deep and typically turbulent and choppy. In the transition zone the water slows and deepens in an abrupt step or standing wave.</p>
+<h3>1.2 A short history</h3>
+<ul>
+<li>Leonardo da Vinci noticed the phenomenon, but Giorgio Bidone was the first to study it experimentally and analytically (De Padova &amp; Mossa, 2021).</li>
+<li>Bidone published the first experimental investigations in 1820. He described a stream in a rectangular channel held back by a lowered gate, rising abruptly against the gate to form an “intumescence”, meaning a swelling.</li>
+<li>Jean-Baptiste Bélanger formulated the first modern theory in 1841. His conjugate-depth equation is derived in section 3.</li>
+</ul>
+<h3>1.3 Where we see it</h3>
+<ul>
+<li><b>Naturally:</b> where a channel goes from steep to mild slope, and where a stream flows into a still body of water such as a lake.</li>
+<li><b>By design:</b> below weirs, spillways and sluice gates, inside stilling basins.</li>
+<li><b>In civil engineering:</b> water flowing down a dam spillway carries enough kinetic energy to erode the streambed and undermine the structure. A jump dissipates much of that energy, so it should occur on an apron engineered to withstand the hydraulic forces and to resist cavitation and other erosion (Wikipedia, Hydraulic jump).</li>
+<li><b>In drainage:</b> channels, culverts, partly full pipes, steep-to-mild transitions and outlet structures (CivilGEO, 2026). Jumps also matter for flood management and fish-passage design.</li>
+<li><b>At home:</b> the tap-on-sink ring. Water spreads radially, fast and thin, then jumps at a critical radius to a deeper, slower depth that conserves momentum. The ring moves in or out as the flow rate changes. This is a <em>circular</em> jump; our derivation is for a straight, horizontal rectangular channel (Hewett, 2025).</li>
+</ul>
+<h3>1.4 Flow regimes and the Froude number</h3>
+<p>Flow conditions in an open channel are classified by the Froude number, a dimensionless ratio of inertial to gravitational forces. In a rectangular channel the hydraulic depth y is just the flow depth.</p>
+<div class="eq">Fr = <fr><n>V</n><d>√<rad>g·y</rad></d></fr></div>
+<p>Physically, √(g·y) is the speed of a small surface wave, so Fr compares the flow speed with how fast a disturbance can travel. That is why the regimes behave so differently:</p>
+<ul>
+<li><b>Supercritical (Fr &gt; 1):</b> fast and shallow. Waves cannot travel upstream, so upstream conditions control the flow.</li>
+<li><b>Subcritical (Fr &lt; 1):</b> slow and deep. Waves travel both upstream and downstream, so downstream conditions control the flow.</li>
+<li><b>Critical (Fr = 1):</b> the transition between the two states.</li>
+</ul>
+<h3>1.5 Specific energy and critical depth</h3>
+<p>Specific energy E is the total mechanical energy per unit weight of fluid, measured from the channel bed. On a horizontal bed it is the depth (pressure head) plus the velocity head. With discharge per unit width q = V·y:</p>
+<div class="eq">E = y + <fr><n>V²</n><d>2g</d></fr> = y + <fr><n>q²</n><d>2g·y²</d></fr></div>
+<p>For a fixed q, E has a minimum. Setting dE/dy = 0 gives 1 − q²/(g·y³) = 0, which defines the <b>critical depth</b>:</p>
+<div class="eq">y<sub>c</sub> = ∛<rad><fr><n>q²</n><d>g</d></fr></rad> &nbsp;&nbsp; E<sub>min</sub> = <fr><n>3</n><d>2</d></fr>·y<sub>c</sub></div>
+<p>At y<sub>c</sub> the velocity head is y<sub>c</sub>/2, which gives the 1.5 factor, and Fr = 1. For any E above the minimum there are two <b>alternate depths</b>: a shallow, fast supercritical one and a deep, slow subcritical one. In a jump the flow goes from the shallow branch to the deep branch, but at a <em>lower</em> energy, so a jump is not a move between alternate depths.</p>
+<h3>1.6 Why two depths? The momentum function</h3>
+<p>What the jump does conserve is momentum. Per unit width, the pressure force plus the momentum flow, divided by ρg, is the momentum function:</p>
+<div class="eq">M(y) = <fr><n>y²</n><d>2</d></fr> + <fr><n>q²</n><d>g·y</d></fr></div>
+<p>M also has a minimum at y<sub>c</sub> (dM/dy = y − q²/(g·y²) = 0 gives the same y<sub>c</sub>). For any M above that minimum there are two depths with the same momentum, called <b>conjugate depths</b>: the initial depth y<sub>1</sub> (supercritical branch) and the sequent depth y<sub>2</sub> (subcritical branch). This is exactly what the M–y graph in the simulator shows.</p>
+<p>Increasing q moves the whole M curve to the right and up, giving the flow more momentum at its critical point. At the same M, a larger q means a larger y<sub>1</sub> and a smaller y<sub>2</sub>, so the two depths move closer together. Since the energy loss scales with (y<sub>2</sub> − y<sub>1</sub>)³ (section 3), a smaller depth gap means less energy lost.</p>
+<h3>1.7 Where the energy goes</h3>
+<p>In the experiment, rapid flow enters from the left and slows toward the right. Some kinetic energy becomes potential energy as the water gains depth, but most of the difference is lost: the turbulent roller converts mechanical energy into heat (and some sound). For the control volume between section 1 (upstream) and section 2 (downstream), Hewett (2025) writes the energy balance as</p>
+<div class="eq">y₁ + <fr><n>V₁²</n><d>2g</d></fr> = y₂ + <fr><n>V₂²</n><d>2g</d></fr> + Δe</div>
+<p>where Δe is the head loss. The loss depends on the two conjugate depths, but those depths are themselves fixed by the flow (q and y<sub>1</sub>), so velocity still matters indirectly.</p>
+<h3>1.8 Jump types</h3>
+<div class="scroll"><table>
+<tr><th>Fr₁</th><th>Type</th><th><fr><n>y₂</n><d>y₁</d></fr></th><th>Description</th><th>Energy lost</th></tr>
+<tr><td>≤ 1.0</td><td>No jump</td><td>1.0</td><td>Flow is critical or subcritical</td><td>none</td></tr>
+<tr><td>1.0 – 1.7</td><td>Undular</td><td>1.0 – 2.0</td><td>Water surface shows undulations</td><td>&lt; 5%</td></tr>
+<tr><td>1.7 – 2.5</td><td>Weak</td><td>2.0 – 3.1</td><td>Small rollers; smooth water downstream</td><td>5 – 15%</td></tr>
+<tr><td>2.5 – 4.5</td><td>Oscillating</td><td>3.1 – 5.9</td><td>Oscillating jet; large waves travel downstream</td><td>15 – 45%</td></tr>
+<tr><td>4.5 – 9.0</td><td>Steady</td><td>5.9 – 12.0</td><td>Stable; position less sensitive to downstream depth</td><td>45 – 70%</td></tr>
+<tr><td>&gt; 9.0</td><td>Strong</td><td>&gt; 12.0</td><td>Rough surface, downstream waves, high dissipation</td><td>70 – 85%</td></tr>
+</table></div>
+<ul>
+<li><b>Undular:</b> smooth, oscillatory waves propagate downstream and the rise in surface elevation is gradual.</li>
+<li><b>Weak:</b> a smaller rise in surface elevation and less downstream turbulence; a milder steady jump.</li>
+<li><b>Oscillating:</b> regular fluctuations in surface elevation and flow, cycling between supercritical and subcritical behavior.</li>
+<li><b>Steady:</b> an abrupt rise, turbulent waves and substantial dissipation. This is the ideal and prevalent range for stilling basin design.</li>
+<li><b>Strong:</b> a higher rise and more turbulent downstream flow than a steady jump.</li>
+</ul>
+<div class="note">The Penn State case study calls 4.5–9.0 the best range, since the large dissipation gives a well-balanced steady jump. It calls 2.5–4.5 the worst, because the large waves can potentially cause structural damage. These ranges come from USBR and are a guide, not exact cut-offs: near 4.5 or 9 a jump shows features of both neighbors.</div>
+<h3>1.9 Tailwater and what keeps a jump in place</h3>
+<p>A jump forms only where flow enters supercritical (Fr₁ &gt; 1) and leaves subcritical (Fr₂ &lt; 1). It holds its position when the downstream depth, the <b>tailwater</b>, matches the sequent depth y<sub>2</sub>. If the tailwater is too low, the jump is swept downstream. If it is too high, the jump moves upstream and can drown. Engineers use this to size stilling basins and outlet protection.</p>
+<p style="font-size:15px;color:var(--muted)">Sources: CivilGEO (2026), De Padova and Mossa (2021), Hewett (2025), Penn State, Wikipedia, USBR (Martin &amp; Wagner, 1961).</p>
+</section>
+
+<section>
+<h2>2. Experiment overview</h2>
+<p>We model the classic flume experiment (Hewett, 2025). Water flows steadily from left to right: rapid, shallow flow enters on the left, passes through a turbulent roller, and leaves slower and deeper on the right. The two sections of interest are section 1 (upstream, depth y<sub>1</sub>) and section 2 (downstream, depth y<sub>2</sub>), at the same bed level (z<sub>1</sub> = z<sub>2</sub>). The energy line drops by ΔE across the jump; finding ΔE is one goal of the derivation.</p>
+<p>The depths y<sub>1</sub> and y<sub>2</sub> are called <b>conjugate</b> or <b>sequent</b> depths. The jump is a natural energy dissipator: the same flow that arrives with a lot of kinetic energy leaves with much less.</p>
+<svg viewBox="0 0 700 220" role="img" aria-label="Labeled schematic of a hydraulic jump between section 1 and section 2" font-family="Work Sans,sans-serif" font-size="14" fill="currentColor" color="var(--ink)">
+<path d="M40 180V150H250C300 150 330 92 420 90H660V180Z" fill="var(--water)" opacity=".75"/>
+<rect x="40" y="180" width="620" height="8" fill="var(--bed)"/>
+<g stroke="currentColor" fill="none" stroke-dasharray="5 4"><path d="M200 20V180M520 20V180"/></g>
+<text x="205" y="34">section 1</text><text x="525" y="34">section 2</text>
+<g stroke="#c0392b" stroke-width="2" fill="none"><path d="M40 46H200M520 80H660"/><path stroke-dasharray="5 4" d="M200 46H520"/></g>
+<text x="46" y="40" fill="#c0392b">energy line</text><text x="548" y="72" fill="#c0392b">ΔE</text>
+<g fill="none" stroke="currentColor"><path d="M120 150V180M114 150H126M114 180H126M580 90V180M574 90H586M574 180H586"/></g>
+<text x="128" y="170">y₁</text><text x="588" y="140">y₂</text>
+<g fill="#fff" opacity=".85"><circle cx="290" cy="130" r="4"/><circle cx="315" cy="118" r="5"/><circle cx="345" cy="112" r="4"/><circle cx="372" cy="108" r="5"/><circle cx="395" cy="116" r="3"/></g>
+<text x="300" y="100">turbulence</text>
+<text x="52" y="210">rapid flow →</text><text x="540" y="210">slower flow →</text>
+</svg>
+<h3>Assumptions and what breaks them</h3>
+<div class="scroll"><table>
+<tr><th>Assumption</th><th>Why we use it</th><th>If violated</th></tr>
+<tr><td>Horizontal, rectangular channel</td><td>Weight has no component along the flow; area is b·y</td><td>Sloped or trapezoidal channels need extra terms in the momentum balance</td></tr>
+<tr><td>Steady, one-dimensional flow</td><td>One velocity per section</td><td>Real jumps have recirculation and unsteady surface motion</td></tr>
+<tr><td>Hydrostatic pressure at sections 1 and 2</td><td>Pressure force = ½ρg·y² per unit width</td><td>Poor for very steep or curved streamlines</td></tr>
+<tr><td>Negligible bed friction over the jump</td><td>Jump is short</td><td>Real jumps are somewhat shorter in y₂ than predicted</td></tr>
+</table></div>
+</section>
+
+<section>
+<h2>3. Derivation</h2>
+<h3>3.0 Control volume, assumptions and symbols</h3>
+<p>Draw a control volume from section 1 to section 2 around the jump. We assume (1) a horizontal rectangular channel, so the weight component along the flow is negligible; (2) steady, one-dimensional flow before and after the jump; (3) hydrostatic pressure, P = ρ·g·h; and (4) negligible bed friction across the short jump.</p>
+<div class="scroll"><table>
+<tr><th>Symbol</th><th>Meaning</th><th>Units</th></tr>
+<tr><td>y₁, y₂</td><td>Upstream (initial) and downstream (sequent) depths</td><td>m</td></tr>
+<tr><td>V₁, V₂</td><td>Mean velocities at sections 1 and 2</td><td>m/s</td></tr>
+<tr><td>q, Q</td><td>Discharge per unit width, and total discharge Q = b·q</td><td>m²/s, m³/s</td></tr>
+<tr><td>Fr₁, Fr₂</td><td>Froude numbers at each section</td><td>none</td></tr>
+<tr><td>E, E<sub>L</sub> (= ΔE)</td><td>Specific energy, and head loss across the jump</td><td>m</td></tr>
+<tr><td>M</td><td>Momentum function</td><td>m²</td></tr>
+<tr><td>ρ, γ = ρg</td><td>Density, specific weight</td><td>kg/m³, N/m³</td></tr>
+<tr><td>P</td><td>Power dissipated</td><td>W</td></tr>
+</table></div>
+<h3>3.1 Continuity</h3>
+<p>In a steady channel of constant width b, the same q enters at section 1 and leaves at section 2:</p>
+<div class="eq">q = V₁·y₁ = V₂·y₂ &nbsp;⟹&nbsp; V₁ = <fr><n>q</n><d>y₁</d></fr> &nbsp; and &nbsp; V₂ = <fr><n>q</n><d>y₂</d></fr></div>
+<h3>3.2 Momentum equation</h3>
+<p>With hydrostatic pressure, the pressure force per unit width at a section of depth y is</p>
+<div class="eq">F = ∫₀<sup>y</sup> ρ·g·s ds = <fr><n>1</n><d>2</d></fr>·ρ·g·y²</div>
+<p>Momentum principle: net force = momentum flow out − momentum flow in. The mass flow per unit width is ρq, so</p>
+<div class="eq"><fr><n>1</n><d>2</d></fr>ρg·y₁² − <fr><n>1</n><d>2</d></fr>ρg·y₂² = ρq(V₂ − V₁)</div>
+<p>Divide by ρg and collect section 1 on the left and section 2 on the right:</p>
+<div class="eq"><fr><n>y₁²</n><d>2</d></fr> + <fr><n>q·V₁</n><d>g</d></fr> = <fr><n>y₂²</n><d>2</d></fr> + <fr><n>q·V₂</n><d>g</d></fr></div>
+<h3>3.3 Substitute velocity and check the units</h3>
+<p>Use V = q / y from continuity. Each side becomes</p>
+<div class="eq"><fr><n>q·V₁</n><d>g</d></fr> = <fr><n>q·(q/y₁)</n><d>g</d></fr> = <fr><n>q²</n><d>g·y₁</d></fr> &nbsp;&nbsp; and &nbsp;&nbsp; <fr><n>q·V₂</n><d>g</d></fr> = <fr><n>q²</n><d>g·y₂</d></fr></div>
+<p>so the momentum balance is M(y₁) = M(y₂), with</p>
+<div class="eq"><fr><n>y₁²</n><d>2</d></fr> + <fr><n>q²</n><d>g·y₁</d></fr> = <fr><n>y₂²</n><d>2</d></fr> + <fr><n>q²</n><d>g·y₂</d></fr> &nbsp;&nbsp; i.e. &nbsp; M(y) = <fr><n>y²</n><d>2</d></fr> + <fr><n>q²</n><d>g·y</d></fr></div>
+<p><b>Why q², not q³?</b> q has units m²/s, g has m/s² and y has m. So q²/(g·y) = (m⁴/s²)/(m²/s²) = m², which matches the hydrostatic term y²/2 (m²). A q³ term would have units m⁴/s and could not be added to m². Each term contains exactly one q from the momentum flow ρq and one from V = q/y, giving q·q = q².</p>
+<div class="note"><b>Why not Bernoulli?</b> Bernoulli assumes no energy loss along a streamline, but a jump is defined by its loss: E₁ &gt; E₂ (Chanson, 2022). Momentum is conserved across the jump; energy is not. Energy comes in only afterward, to find the loss.</div>
+<h3>3.4 Solving for the depth ratio (Bélanger equation)</h3>
+<p>Move the depth terms to one side and use 1/y₁ − 1/y₂ = (y₂ − y₁)/(y₁y₂):</p>
+<div class="eq"><fr><n>y₂² − y₁²</n><d>2</d></fr> = <fr><n>q²</n><d>g</d></fr>·<fr><n>y₂ − y₁</n><d>y₁·y₂</d></fr></div>
+<p>Factor y₂² − y₁² = (y₂ − y₁)(y₂ + y₁) and divide by (y₂ − y₁), which is nonzero in a jump:</p>
+<div class="eq"><fr><n>y₁ + y₂</n><d>2</d></fr> = <fr><n>q²</n><d>g·y₁·y₂</d></fr> &nbsp;⟹&nbsp; <fr><n>q²</n><d>g</d></fr> = <fr><n>1</n><d>2</d></fr>·y₁·y₂·(y₁ + y₂) &nbsp;&nbsp;(★)</div>
+<p>Introduce Fr₁² = q² / (g·y₁³) and let r = y₂ / y₁. Dividing (★) by y₁³:</p>
+<div class="eq">Fr₁² = <fr><n>r(1 + r)</n><d>2</d></fr> &nbsp;⟹&nbsp; r² + r − 2Fr₁² = 0 &nbsp;⟹&nbsp; r = <fr><n>−1 ± √<rad>1 + 8·Fr₁²</rad></n><d>2</d></fr></div>
+<p>The negative root gives a negative depth, so we keep the positive root:</p>
+<div class="eq"><fr><n>y₂</n><d>y₁</d></fr> = <fr><n>1</n><d>2</d></fr>( √<rad>1 + 8·Fr₁²</rad> − 1 )</div>
+<p>Checks: Fr₁ = 1 gives y₂/y₁ = 1 (no jump). For large Fr₁ the ratio grows like √2·Fr₁. Writing the same algebra with Fr₂² = q²/(g·y₂³) gives the reverse relation (Hewett, 2025):</p>
+<div class="eq"><fr><n>y₁</n><d>y₂</d></fr> = <fr><n>1</n><d>2</d></fr>( √<rad>1 + 8·Fr₂²</rad> − 1 )</div>
+<h3>3.5 Energy loss, step by step</h3>
+<p><b>Step 1: specific energy.</b> On a horizontal bed (elevation head z = 0):</p>
+<div class="eq">E = y + <fr><n>V²</n><d>2g</d></fr> = y + <fr><n>q²</n><d>2g·y²</d></fr></div>
+<p><b>Step 2: write the loss.</b> The head loss is upstream minus downstream specific energy. Group the depth terms and the velocity-head terms:</p>
+<div class="eq">E<sub>L</sub> = E₁ − E₂ = (y₁ − y₂) + <fr><n>q²</n><d>2g</d></fr>( <fr><n>1</n><d>y₁²</d></fr> − <fr><n>1</n><d>y₂²</d></fr> ) = (y₁ − y₂) + <fr><n>q²</n><d>2g</d></fr>·<fr><n>y₂² − y₁²</n><d>y₁²·y₂²</d></fr></div>
+<p><b>Step 3: eliminate q²/g</b> using (★) from the momentum balance:</p>
+<div class="eq">E<sub>L</sub> = (y₁ − y₂) + <fr><n>1</n><d>2</d></fr>·<fr><n>y₁·y₂·(y₁ + y₂)</n><d>2</d></fr>·<fr><n>y₂² − y₁²</n><d>y₁²·y₂²</d></fr></div>
+<p><b>Step 4: simplify.</b> The factors combine to 1/4, and y₁·y₂ in the numerator cancels one factor in the denominator y₁²y₂²:</p>
+<div class="eq">E<sub>L</sub> = (y₁ − y₂) + <fr><n>(y₂ + y₁)(y₂² − y₁²)</n><d>4·y₁·y₂</d></fr></div>
+<p>Factor y₂² − y₁² = (y₂ − y₁)(y₂ + y₁) and write the first term as −(y₂ − y₁):</p>
+<div class="eq">E<sub>L</sub> = −(y₂ − y₁) + <fr><n>(y₂ − y₁)(y₂ + y₁)²</n><d>4·y₁·y₂</d></fr></div>
+<p><b>Step 5: combine into one fraction.</b> Put the first term over 4y₁y₂ and factor out (y₂ − y₁):</p>
+<div class="eq">E<sub>L</sub> = <fr><n>(y₂ − y₁)·((y₂ + y₁)² − 4·y₁·y₂)</n><d>4·y₁·y₂</d></fr></div>
+<p>Expand the bracket: (y₂ + y₁)² − 4y₁y₂ = y₂² − 2y₁y₂ + y₁² = (y₂ − y₁)². So</p>
+<div class="eq">ΔE = E<sub>L</sub> = E₁ − E₂ = <fr><n>(y₂ − y₁)³</n><d>4·y₁·y₂</d></fr></div>
+<h3>3.6 What the equation tells you</h3>
+<ul>
+<li><b>Direction of flow (second law).</b> Energy can only be dissipated in a passive jump, so ΔE &gt; 0. The denominator 4y₁y₂ is positive, so (y₂ − y₁)³ must be positive: y₂ &gt; y₁. Flow can jump up from supercritical to subcritical, never down.</li>
+<li><b>Cubic scaling with jump height.</b> With h<sub>j</sub> = y₂ − y₁, the numerator is h<sub>j</sub>³. Doubling the height difference multiplies the numerator by 2³ = 8, which is why tall jumps in stilling basins strip so much destructive energy before water reaches the riverbed. (This holds for the numerator; the depths in the denominator change too.)</li>
+<li><b>Where it goes.</b> Momentum is conserved (M₁ = M₂) but energy is not (E₁ &gt; E₂). The swirling roller converts kinetic energy into internal thermal energy and sound.</li>
+</ul>
+<h3>3.7 Power dissipated, step by step</h3>
+<p><b>Step 1: definition.</b> Power is the rate of energy dissipation:</p>
+<div class="eq">P = <fr><n>ΔE<sub>mech</sub></n><d>Δt</d></fr></div>
+<p><b>Step 2: relate to head.</b> Head loss is mechanical energy per unit weight W of fluid (J/N = m), so ΔE<sub>mech</sub> = W·E<sub>L</sub>.</p>
+<p><b>Step 3: express weight.</b> W = m·g and m = ρ·Vol, so W = ρ·g·Vol = γ·Vol, where γ = ρg is the specific weight (N/m³). Then ΔE<sub>mech</sub> = γ·Vol·E<sub>L</sub>.</p>
+<p><b>Step 4: divide by time.</b> In steady flow, Vol/Δt is the volumetric flow rate Q (m³/s):</p>
+<div class="eq">P = <fr><n>γ·Vol·E<sub>L</sub></n><d>Δt</d></fr> = γ·Q·E<sub>L</sub></div>
+<p><b>Step 5: substitute the head loss.</b> With E<sub>L</sub> from section 3.5 and γ = ρg:</p>
+<div class="eq">P = <fr><n>ρ·g·Q·(y₂ − y₁)³</n><d>4·y₁·y₂</d></fr> &nbsp;&nbsp; and per unit width &nbsp;&nbsp; <fr><n>P</n><d>b</d></fr> = <fr><n>ρ·g·q·(y₂ − y₁)³</n><d>4·y₁·y₂</d></fr></div>
+<p><b>Dimensional check:</b> (kg/m³)(m/s²)(m³/s)(m) = kg·m²/s³ = J/s = W.</p>
+<h3>3.8 Dimensional analysis (Buckingham Pi)</h3>
+<p>Ignoring viscosity and surface tension, the downstream depth depends on y₂ = f(y₁, V₁, g). That is 4 variables built from 2 dimensions (L, T), so 4 − 2 = 2 dimensionless groups: y₂/y₁ and V₁²/(g·y₁) = Fr₁². Hence y₂/y₁ = f(Fr₁), and the Bélanger equation is that function. Density drops out because every term in the momentum balance carries ρ.</p>
+<p>The same logic gives ΔE/y₁ = f(Fr₁), which we can check: with r = y₂/y₁, ΔE/y₁ = (r − 1)³/(4r), a function of Fr₁ alone. Jump length is found by experiment, L<sub>j</sub>/y₁ = f(Fr₁); the ≈ 6y₂ estimate used in the simulator is a rough engineering value. At small laboratory scales, viscosity (Reynolds number) and surface tension can add further groups.</p>
+<h3>3.9 Worked example (the simulator’s default values)</h3>
+<div class="scroll"><table>
+<tr><th>Given</th><td>y₁ = 0.20 m, V₁ = 4.5 m/s, b = 1 m, g = 9.81 m/s², so q = 0.90 m²/s and Q = 0.90 m³/s</td></tr>
+<tr><th>Fr₁</th><td><fr><n>4.5</n><d>√<rad>9.81 × 0.20</rad></d></fr> = 3.21 (oscillating jump)</td></tr>
+<tr><th>y₂</th><td><fr><n>1</n><d>2</d></fr> × 0.20 × ( √<rad>1 + 8 × 3.21²</rad> − 1 ) = 0.814 m</td></tr>
+<tr><th>V₂, Fr₂</th><td>V₂ = <fr><n>0.90</n><d>0.814</d></fr> = 1.11 m/s &nbsp; Fr₂ = <fr><n>1.11</n><d>√<rad>9.81 × 0.814</rad></d></fr> = 0.39 (subcritical, as required)</td></tr>
+<tr><th>Momentum check</th><td>M₁ = 0.02 + 0.413 = 0.433 m² &nbsp; M₂ = 0.331 + 0.101 = 0.433 m² (equal)</td></tr>
+<tr><th>Energy</th><td>E₁ = 1.232 m, E₂ = 0.876 m, so ΔE = 0.356 m, which matches <fr><n>(0.614)³</n><d>4 × 0.20 × 0.814</d></fr>. That is 28.9% of E₁.</td></tr>
+<tr><th>Power</th><td>P = 1000 × 9.81 × 0.90 × 0.356 = 3.14 kW</td></tr>
+<tr><th>Jump length</th><td>L<sub>j</sub> ≈ 6 × 0.814 = 4.9 m (rough estimate)</td></tr>
+</table></div>
+</section>
+</div>
+
+<div class="view" id="v-lab">
+<section>
+<h2>Interactive simulation</h2>
+<p>A side view of a horizontal rectangular channel, flowing left to right. Depths are drawn to scale and particle speed is slowed. Gravity is fixed at g = 9.81 m/s². The jump is the ideal Bélanger jump; the turbulent roller is drawn schematically, not solved.</p>
+<div class="sim">
+<div class="row">
+<button class="alt" data-p="1.4,0.5">Undular</button><button class="alt" data-p="2,0.4">Weak</button><button class="alt" data-p="3,0.3">Oscillating</button><button class="alt" data-p="6,0.15">Steady</button><button class="alt" data-p="11,0.1">Strong</button>
+</div>
+<div class="controls">
+<label>Upstream depth y₁ (m)<input id="y1" type="number" step="0.01" min="0.01" value="0.2"><input id="y1r" type="range" min="0.02" max="1" step="0.01" value="0.2" aria-label="y1 slider"></label>
+<label>Upstream velocity V₁ (m/s)<input id="v1" type="number" step="0.1" min="0.1" value="4.5"><input id="v1r" type="range" min="0.5" max="15" step="0.1" value="4.5" aria-label="V1 slider"></label>
+<label>Channel width b (m)<input id="b" type="number" step="0.1" min="0.1" value="1"><input id="br" type="range" min="0.2" max="5" step="0.1" value="1" aria-label="width slider"></label>
+<div class="gfix">g = 9.81 m/s² (fixed)</div>
+<label>Jump toe position: <span id="xtv"></span> from inlet<input id="xt" type="range" min="10" max="60" value="30" aria-label="jump toe position slider"></label>
+</div>
+<div class="row"><button id="apply">Update experiment</button><button id="pause" class="alt">Pause</button></div>
+<canvas id="cv" width="900" height="340" role="img" aria-label="Side view animation of a hydraulic jump"></canvas>
+<p id="msg" role="status"></p>
+<div class="out" id="out"></div>
+<h3>Momentum function M against depth y</h3>
+<canvas id="cv2" width="900" height="320" role="img" aria-label="Momentum function against depth with conjugate depths marked"></canvas>
+<p style="font-size:15px;color:var(--muted)">Both depths sit on the same vertical line because momentum is conserved across the jump. The diamond marks critical depth y<sub>c</sub>, where M is smallest. Adapted from our team’s Hydraulic Jump Lab draft and the M-y diagram in Wikipedia’s “Hydraulic jumps in rectangular channels”.</p>
+</div>
+</section>
+</div>
+
+<div class="view" id="v-project">
+<section>
+<h2>Presentation video</h2>
+<div class="row"><input id="yturl" placeholder="https://www.youtube.com/watch?v=..." style="max-width:420px" aria-label="YouTube link"><button id="ytset">Set link</button></div>
+<p><a id="ytlink" href="https://www.youtube.com/watch?v=REPLACE_ME" target="_blank" rel="noopener"><b>Watch the presentation on YouTube</b></a> <span class="todo">(video not finished; replace this link in the page source)</span></p>
+<h2 style="margin-top:30px">Verbatim YouTube transcript</h2>
+<p>Paste the unedited auto-generated transcript below (YouTube Studio, Subtitles, English auto-generated). The assignment asks for it verbatim, so don’t clean it up.</p>
+<textarea aria-label="Transcript" placeholder="Paste auto-generated transcript here..."></textarea>
+</section>
+<section>
+<h2>How we made this: AI models and process</h2>
+<p><b>This is an AI project</b> exploring what AI can do for engineering coursework. Every equation was checked against our sources and a hand calculation (the worked example above).</p>
+<div class="scroll"><table>
+<tr><th>Task</th><th>Model or tool</th><th>What we asked</th></tr>
+<tr><td>Website draft and critique</td><td>Muse</td><td>“Explain hydraulic jumps and create a website… animation of an experiment done in a rectangular channel with an input box for values.” Later: critique the HTML against the professor’s CheTools Fluid Mechanics site.</td></tr>
+<tr><td>Derivations</td><td>Gemini</td><td>Momentum balance and depth ratio from the Wikipedia rectangular-channel page “showing all steps”; then the energy loss equation; then power dissipated.</td></tr>
+<tr><td>Research cleanup and APA references</td><td>Claude</td><td>Update research notes, check sources, and format an APA 7 reference list.</td></tr>
+</table></div>
+<h3>Iteration and our reasoning</h3>
+<ol>
+<li><b>Draft 1:</b> theory, simulator and an empty project template from the course requirements.</li>
+<li><b>Draft 2:</b> we fixed gravity as a constant, labeled the turbulent region and added sliders including the jump toe.</li>
+<li><b>Draft 3:</b> restructured to match our research outline (theory, experiment, derivation, simulation, video, references, contributions), added the full derivation, the M-y graph, a worked example, and a layout modeled on a classmate’s paper-plus-demo site.</li>
+</ol>
+<h3>Critique by a second model: what we accepted and rejected</h3>
+<p class="todo">Proposed decisions from our team notes; confirm before submitting.</p>
+<div class="scroll"><table>
+<tr><th>Suggestion</th><th>Decision</th><th>Reasoning</th></tr>
+<tr><td>Don’t derive Bélanger from Bernoulli; use momentum, and energy only for ΔE</td><td>Accepted</td><td>Bernoulli can’t cross a jump because the jump is a loss (Chanson, 2022). Step 2 and the note now say this.</td></tr>
+<tr><td>Add a depth or momentum graph</td><td>Accepted</td><td>Added the M-y graph that updates with every input.</td></tr>
+<tr><td>Add dimensional analysis</td><td>Accepted</td><td>Unit check plus a short Buckingham Pi argument.</td></tr>
+<tr><td>Add a worked example and an assumptions table</td><td>Accepted</td><td>Lets a reader check the simulator by hand.</td></tr>
+<tr><td>Theory versus experiment plot</td><td>Deferred</td><td>We have no measured data and won’t invent any.</td></tr>
+<tr><td>Dedicated CFD page</td><td>Rejected</td><td>Not required: the Bélanger result comes from momentum. CFD is listed below as future work.</td></tr>
+<tr><td>Self-check quiz, CSV download</td><td>Deferred</td><td>Nice to have after the required items.</td></tr>
+</table></div>
+<h3>Comparing models</h3>
+<div class="scroll"><table>
+<tr><th>Criterion</th><th>Model A</th><th>Model B</th></tr>
+<tr><td>Physics correctness</td><td class="todo">fill in</td><td class="todo">fill in</td></tr>
+<tr><td>Animation quality</td><td class="todo">fill in</td><td class="todo">fill in</td></tr>
+<tr><td>Followed requirements</td><td class="todo">fill in</td><td class="todo">fill in</td></tr>
+<tr><td>Errors we caught</td><td class="todo">fill in</td><td class="todo">fill in</td></tr>
+</table></div>
+<h3>What we learned and want to learn next</h3>
+<ul>
+<li>Why momentum, not energy, fixes the conjugate depths, and why the loss grows like (y₂ − y₁)³.</li>
+<li>AI wording can sound right and be wrong. Example: “loss depends only on conjugate depths, independent of velocity” needed correcting, since the depths are set by the flow.</li>
+<li>Future work: sloped and non-rectangular channels, tailwater control, and CFD (RANS with VOF) of the roller, validated against Bélanger and measurements.</li>
+</ul>
+</section>
+<section>
+<h2>References</h2>
+<ul style="font-size:16px">
+<li>Chanson, H. (2022, December 28). <i>Can we use the Bernoulli principle to solve the hydraulic jump? Why not?</i> [Video]. YouTube. https://www.youtube.com/watch?v=7NV90xB9b1A</li>
+<li>CivilGEO. (2026, October 21). <i>Hydraulic jump</i>. CivilGEO Knowledge Base. https://knowledge.civilgeo.com/hydraulic-jump/</li>
+<li>The Content Paradox. (2020, October 6). <i>Hydraulic jump - Derivation | Open channel flow | Hydraulics and fluid mechanics</i> [Video]. YouTube. https://youtu.be/GLtb0y2E0r8</li>
+<li>De Padova, D., &amp; Mossa, M. (2021). Hydraulic jump: A brief history and research challenges. <i>Water, 13</i>(13), Article 1733. https://doi.org/10.3390/w13131733</li>
+<li>Hewett, C. (2025, February 5). <i>Hydraulic jump</i> [Video]. YouTube. https://www.youtube.com/watch?v=m_kEdVCvr70</li>
+<li>Hydraulic jump. (n.d.). In <i>Wikipedia</i>. https://en.wikipedia.org/wiki/Hydraulic_jump</li>
+<li>Hydraulic jumps in rectangular channels. (n.d.). In <i>Wikipedia</i>. https://en.wikipedia.org/wiki/Hydraulic_jumps_in_rectangular_channels</li>
+<li>JoVE. (n.d.). <i>Hydraulic jumps</i> [Video]. https://app.jove.com/v/10405/hydraulic-jumps</li>
+<li>Martin, H. M., &amp; Wagner, W. E. (1961). <i>Experience in turbulence in hydraulic structures</i> [Paper presentation]. Ninth Convention of the IAHR, Belgrade. U.S. Bureau of Reclamation. https://www.usbr.gov/tsc/techreferences/hydraulics_lab/pubs/PAP/PAP-0155.pdf</li>
+<li>Pennsylvania State University, Department of Mechanical Engineering. (n.d.). <i>Hydraulic jump through a sluice gate</i> [Case study]. https://www.me.psu.edu/casestudy/FluidMechanics/CaseStudy03/casestudy.html</li>
+<li>Structure inspiration: Sheets, M. (2026). <i>Electrolyte wetting</i> [Course project website]. https://mattsheets1214-cpu.github.io/electrolyte-wetting/</li>
+</ul>
+<p class="todo" style="font-size:15px">Verify the YouTube and JoVE entries against the video pages before submitting (authors, titles, dates).</p>
+</section>
+<section>
+<h2>Contributions</h2>
+<div class="scroll"><table>
+<tr><th>Member</th><th>Contribution</th></tr>
+<tr><td>Praapti</td><td>Research notes, website idea and outline, website prompt, assembly of the project document</td></tr>
+<tr><td>Amaya</td><td>History and Hewett video research, source-checking, APA references</td></tr>
+<tr><td>Sania</td><td class="todo">add contribution</td></tr>
+<tr><td class="todo">other members</td><td class="todo">add contribution</td></tr>
+</table></div>
+</section>
+</div>
+</main>
+<footer>Introductory fluid mechanics course project, 2026. AI-assisted. Idealized Bélanger model for teaching, not for design use.</footer>
+
+<script>
+const $=id=>document.getElementById(id),cv=$('cv'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,G=9.81;
+const cs=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let S=null,paused=false,t=0,parts=[];
+function route(){const h=location.hash.slice(1),v=['paper','lab','project'].includes(h)?h:'paper';
+ ['paper','lab','project'].forEach(k=>{$('v-'+k).classList.toggle('on',k===v)});
+ document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('on',a.dataset.v===v));}
+addEventListener('hashchange',route);route();
+$('theme').onclick=()=>{const d=document.documentElement,dk=d.dataset.theme?d.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;d.dataset.theme=dk?'light':'dark';drawM()};
+const F=(v,d)=>isFinite(v)?v.toFixed(d):'–';
+function calc(){
+ const y1=+$('y1').value,v1=+$('v1').value,b=+$('b').value;
+ if(!(y1>0&&v1>0&&b>0)){$('msg').textContent='Enter positive values for every field.';return null}
+ const Fr=v1/Math.sqrt(G*y1),q=v1*y1,Q=q*b,jump=Fr>1.0001;
+ const y2=jump?y1/2*(Math.sqrt(1+8*Fr*Fr)-1):y1,v2=q/y2,dE=jump?Math.pow(y2-y1,3)/(4*y1*y2):0;
+ const E1=y1+v1*v1/(2*G),yc=Math.cbrt(q*q/G),P=G*Q*dE;
+ let type='No jump';if(jump)type=Fr<1.7?'Undular':Fr<2.5?'Weak':Fr<4.5?'Oscillating':Fr<9?'Steady':'Strong';
+ $('msg').textContent=jump?'':'Fr₁ ≤ 1: the flow is subcritical or critical, so no hydraulic jump forms.';
+ const fr=(a,c)=>`<fr><n>${a}</n><d>${c}</d></fr>`;
+ $('out').innerHTML=[['Fr₁',F(Fr,2)],['Jump type',type],['y₂ (m)',F(y2,3)],['V₂ (m/s)',F(v2,2)],[fr('y₂','y₁'),F(y2/y1,2)],['Fr₂',F(v2/Math.sqrt(G*y2),2)],['Critical depth y꜀ (m)',F(yc,3)],['Head loss ΔE (m)',F(dE,3)],['Energy lost',F(100*dE/E1,1)+'%'],['Power dissipated (kW)',F(P,2)],['Jump length ≈6y₂ (m)',F(jump?6*y2:0,2)],['Q (m³/s)',F(Q,3)]].map(a=>`<div>${a[0]}<b>${a[1]}</b></div>`).join('');
+ return {y1,v1,y2,v2,q,yc,Fr,jump,Lj:jump?6*y2:0};
+}
+function setup(){
+ S=calc();if(!S)return;
+ const L=Math.max(10,S.Lj*2.6+2);S.L=L;S.xt=L*$('xt').value/100;$('xtv').textContent=S.xt.toFixed(1)+' m';
+ const top=Math.max(S.y2,S.y1)*1.25;S.sy=(H-70)/top;S.sx=W/L;S.base=H-30;
+ parts=[];for(let i=0;i<110;i++)parts.push({x:Math.random()*L,f:Math.random()});
+ drawM();
+}
+function depthAt(x,tm){
+ const {y1,y2,xt,Lj,jump}=S;
+ if(!jump)return y1+0.01*y1*Math.sin(x*3-tm*3);
+ if(x<xt)return y1*(1+0.03*Math.sin(x*6-tm*5));
+ if(x<=xt+Lj){const u=(x-xt)/Lj,s=u*u*(3-2*u);
+  const turb=Math.min(1,Math.sin(Math.PI*u)*1.6)*(y2-y1)*0.09*(Math.sin(x*14-tm*9)+Math.sin(x*23+tm*7)*0.6);
+  return y1+(y2-y1)*s+turb+Math.sin(Math.PI*u)*(y2-y1)*0.1;}
+ return y2*(1+(S.Fr<2.5?0.015:0.04)*Math.sin((x-xt-Lj)*4-tm*4)*Math.exp(-(x-xt-Lj)*0.15));
+}
+function draw(){
+ const {sx,sy,base,L,xt,Lj,jump}=S;
+ ctx.clearRect(0,0,W,H);ctx.beginPath();ctx.moveTo(0,base);
+ for(let px=0;px<=W;px+=3)ctx.lineTo(px,base-depthAt(px/sx,t)*sy);
+ ctx.lineTo(W,base);ctx.closePath();
+ const gr=ctx.createLinearGradient(0,0,0,base);gr.addColorStop(0,'rgba(74,163,224,.85)');gr.addColorStop(1,'rgba(30,95,150,.95)');
+ ctx.fillStyle=gr;ctx.fill();
+ if(jump){ctx.fillStyle='rgba(255,255,255,.55)';
+  for(let i=0;i<40;i++){const u=(i*0.618+t*0.25*(1+i%3*0.3))%1,x=xt+u*Lj,d=depthAt(x,t);ctx.beginPath();ctx.arc(x*sx,base-d*sy+2+((i*7)%5),2+(i%3),0,7);ctx.fill();}}
+ ctx.fillStyle='rgba(255,255,255,.8)';
+ parts.forEach(p=>{ctx.beginPath();ctx.arc(p.x*sx,base-depthAt(p.x,t)*sy*p.f,2,0,7);ctx.fill()});
+ ctx.fillStyle=cs('--bed');ctx.fillRect(0,base,W,30);
+ const col=cs('--ink'),ac=cs('--accent');
+ ctx.fillStyle=col;ctx.font='600 14px "Work Sans",sans-serif';ctx.strokeStyle=col;ctx.lineWidth=1;
+ const mark=(x,d,lab)=>{const px=x*sx,y=base-d*sy;ctx.beginPath();ctx.moveTo(px,base);ctx.lineTo(px,y);ctx.stroke();ctx.fillText(lab,px+4,(y+base)/2)};
+ mark(xt*0.5,S.y1,'y₁ = '+S.y1.toFixed(2)+' m');
+ if(jump)mark(Math.min(L-0.3,xt+Lj+(L-xt-Lj)*0.45),S.y2,'y₂ = '+S.y2.toFixed(2)+' m');
+ if(jump){ctx.save();ctx.setLineDash([6,5]);ctx.strokeStyle=ac;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xt*sx,base);ctx.lineTo(xt*sx,34);ctx.stroke();ctx.restore();
+  ctx.fillStyle=ac;ctx.textAlign='right';ctx.fillText('Jump toe',xt*sx-6,48);
+  const x1=xt*sx,x2=(xt+Lj)*sx,by=base-S.y2*sy-30;
+  ctx.fillStyle=col;ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(x1,by+6);ctx.lineTo(x1,by);ctx.lineTo(x2,by);ctx.lineTo(x2,by+6);ctx.stroke();
+  ctx.textAlign='center';ctx.fillText('Turbulent',(x1+x2)/2,by-6);ctx.textAlign='left';}
+ ctx.fillStyle=col;ctx.fillText('Flow →',10,20);ctx.fillText('V₁ = '+S.v1.toFixed(1)+' m/s',10,40);
+ if(jump)ctx.fillText('V₂ = '+S.v2.toFixed(2)+' m/s',W-150,20);
+ ctx.fillText('Fr₁ = '+S.Fr.toFixed(2),W/2-30,20);
+}
+function drawM(){
+ if(!S)return;const c=$('cv2'),x=c.getContext('2d'),w=c.width,h=c.height,R=S;x.clearRect(0,0,w,h);
+ const tx=cs('--ink'),mu=cs('--muted'),ln=cs('--line'),wa=cs('--water'),ac=cs('--accent');
+ const l=70,r=24,tp=16,bt=46,pw=w-l-r,ph=h-tp-bt,M=y=>R.q*R.q/(G*y)+y*y/2;
+ const ym=Math.max(R.y2,R.y1,R.yc)*1.3,y0=Math.max(Math.min(R.y1,R.yc)*.5,ym*.02),Mm=M(y0)*1.05;
+ const X=m=>l+m/Mm*pw,Y=y=>tp+ph-y/ym*ph;
+ x.font='13px "Work Sans",sans-serif';x.lineWidth=1;x.strokeStyle=ln;x.fillStyle=mu;
+ for(let i=0;i<=4;i++){const mv=Mm*i/4,yv=ym*i/4;x.beginPath();x.moveTo(X(mv),tp);x.lineTo(X(mv),tp+ph);x.moveTo(l,Y(yv));x.lineTo(l+pw,Y(yv));x.stroke();
+  x.textAlign='center';x.fillText(mv.toPrecision(2),X(mv),tp+ph+16);x.textAlign='right';x.fillText(yv.toPrecision(2),l-8,Y(yv)+4)}
+ x.fillStyle=tx;x.textAlign='center';x.fillText('momentum function M (m²)',l+pw/2,h-8);
+ x.save();x.translate(14,tp+ph/2);x.rotate(-Math.PI/2);x.fillText('depth y (m)',0,0);x.restore();
+ x.strokeStyle=wa;x.lineWidth=2.5;x.beginPath();
+ for(let i=0;i<=200;i++){const y=y0+(ym-y0)*i/200,px=X(M(y)),py=Y(y);i?x.lineTo(px,py):x.moveTo(px,py)}x.stroke();
+ x.setLineDash([5,4]);x.lineWidth=1.3;x.strokeStyle=ac;
+ const ref=(m,y)=>{x.beginPath();x.moveTo(X(m),tp+ph);x.lineTo(X(m),Y(y));x.moveTo(l,Y(y));x.lineTo(X(m),Y(y));x.stroke()};
+ ref(M(R.y1),R.y1);if(R.jump)ref(M(R.y2),R.y2);x.setLineDash([]);
+ x.fillStyle=mu;x.beginPath();const cx=X(M(R.yc)),cy=Y(R.yc);x.moveTo(cx,cy-7);x.lineTo(cx+7,cy);x.lineTo(cx,cy+7);x.lineTo(cx-7,cy);x.fill();
+ x.fillStyle=tx;x.textAlign='left';x.fillText('critical y꜀',cx+10,cy+4);
+ const pt=(y,col,lab)=>{x.fillStyle=col;x.beginPath();x.arc(X(M(y)),Y(y),6,0,7);x.fill();x.fillStyle=tx;x.textAlign='left';x.fillText(lab,X(M(y))+10,Y(y)+4)};
+ pt(R.y1,ac,'y₁ (supercritical)');if(R.jump)pt(R.y2,wa,'y₂ (subcritical)');
+}
+let last=performance.now();
+function loop(now){
+ const dt=Math.min(0.05,(now-last)/1000);last=now;
+ if(S&&!paused){t+=dt;
+  parts.forEach(p=>{const d=depthAt(p.x,0);let v=S.q/d;
+   const inJ=S.jump&&p.x>S.xt&&p.x<S.xt+S.Lj;
+   if(inJ&&p.f>0.65)v*=-0.5;
+   p.x+=v*0.12*dt*(1+0.2*Math.sin(p.f*20+t));
+   if(inJ&&p.f>0.65&&p.x<S.xt+0.02)p.f=Math.random()*0.6;
+   if(p.x>S.L){p.x=0;p.f=Math.random()}if(p.x<0){p.x=S.L-0.01;p.f=Math.random()}});}
+ if(S)draw();requestAnimationFrame(loop);
+}
+function syncR(){['y1','v1','b'].forEach(i=>$(i+'r').value=$(i).value)}
+['y1','v1','b'].forEach(i=>{$(i).addEventListener('input',()=>{syncR();setup()});$(i+'r').addEventListener('input',()=>{$(i).value=$(i+'r').value;setup()})});
+$('xt').addEventListener('input',()=>{if(S){S.xt=S.L*$('xt').value/100;$('xtv').textContent=S.xt.toFixed(1)+' m'}});
+$('apply').onclick=setup;
+$('pause').onclick=e=>{paused=!paused;e.target.textContent=paused?'Resume':'Pause'};
+document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{const [fr,y]=b.dataset.p.split(',').map(Number);
+ $('y1').value=y;$('v1').value=(fr*Math.sqrt(G*y)).toFixed(2);syncR();setup()});
+$('ytset').onclick=()=>{const u=$('yturl').value.trim();if(/^https:\/\/(www\.)?(youtube\.com|youtu\.be)\//.test(u))$('ytlink').href=u;else alert('Enter a full https://youtube.com or https://youtu.be link.')};
+setup();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
